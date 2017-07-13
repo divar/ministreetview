@@ -1,0 +1,46 @@
+<header class="header black-bg">
+	<div class="sidebar-toggle-box">
+		<div class="fa fa-bars tooltips" data-placement="right" data-original-title="Toggle Navigation"></div>
+	</div>
+ 
+	<a href="{{base_url()}}?idcube={{data.datanav[ 0 ]['id_cube']}}" class="logo"><b>Mini Street Campus</b></a>
+ 	<div class="top-menu">
+		
+	</div>
+	<div class="nav" id="top_menu" style="z-index: 1009;">
+	<ul class="nav pull-right"> 
+		{% if auth.check %}
+			<li>
+			 
+			  	<a href="#" data-toggle="dropdown" style="height: 100%; padding-top: 20px; color: #4c4a5d;">
+			    	{{ auth.user.username }} <span class="caret"></span>
+			  	</a>
+			  	<ul class="dropdown-menu dropdown-menu-right" style="background: rgba(255, 215, 119, 0.58); border: none; " role="menu">
+				    <li><a href="{{ path_for('auth.changepass') }}">Change Password</a></li> 
+				    <li class="divider"></li>
+				    <li><a href="{{ path_for('auth.signout') }}">Sign Out</a></li>
+				</ul>
+			 
+			</li>
+		{% else %} 
+			<li><a style="height: 100%; padding-top: 20px; color: #4c4a5d;" href="{{ path_for('auth.signin') }}">login</a></li> 
+		{% endif %} 
+		</ul>
+		<ul class="nav pull-right"> 
+			{% if auth.check %}
+			<li class="">
+				<a href="#" data-toggle="dropdown" style="height: 100%; padding-top: 20px; color: #4c4a5d;"><i class="fa fa-chevron-down"> </i> <span> lihat</span></a>
+				<ul class="dropdown-menu dropdown-menu-left" style="background: rgba(255, 215, 119, 0.58); border: none; " role="menu">
+				    	<li><a href="{{ path_for('user.dashboard')}}">lihat Lokasi</a></li>
+				    {% if auth.userlevel < 2 %} 
+				    	<li><a href="{{path_for('admin.kategori')}}">Lihat Kategori</a></li>
+				    {% endif %}
+				    {% if auth.userlevel < 1 %}
+				    	<li><a href="{{path_for('admin.datauser')}}">Lihat User</a></li>
+				    {% endif %}
+				</ul>
+			</li>
+			{% endif %} 
+		</ul> 
+	</div>
+</header> 

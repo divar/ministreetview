@@ -1,0 +1,11 @@
+{% if flash.getMessage('info') %}
+<div id="hideme" class="alert alert-info" style="position:absolute; z-index:1003;  top:60px; left:0;right:0;">
+	<p class="text-center">{{flash.getMessage('info')|first}}</p>
+</div>
+{% endif%}
+
+{% if flash.getMessage('error') %}
+<div id="hideme" class="alert alert-danger" style="position:absolute; z-index:1003;  top:60px; left:0;right:0;">
+	<p class="text-center">{{flash.getMessage('error')|first}}</p>
+</div>
+{% endif%}

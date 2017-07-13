@@ -1,0 +1,225 @@
+{% extends 'templates/app.twig' %}
+{% block nav %}{% include 'templates/partials/navigationpolos.twig' %}{% endblock %}
+{% block headertambahan %}
+<style>
+		.picture-container{
+			position: relative;
+			cursor: pointer;
+			text-align: center;
+		}
+		.picture{
+			 
+			max-width: 149px;
+			max-height: 149px;
+			background-color: #eefdff;
+			border: 4px solid #eefdff;
+			color: #FFFFFF;
+			border-radius: 10%;
+			margin: 0px auto;
+			overflow: hidden;
+			transition: all 0.2s;
+			-webkit-transition: all 0.2s;
+		}
+		.picture:hover{
+			border-color: #2ca8ff;
+		}
+		.content.ct-wizard-green .picture:hover{
+			border-color: #05ae0e;
+		}
+		.content.ct-wizard-blue .picture:hover{
+			border-color: #3472f7;
+		}
+		.content.ct-wizard-orange .picture:hover{
+			border-color: #ff9500;
+		}
+		.content.ct-wizard-red .picture:hover{
+			border-color: #ff3b30;
+		}
+		.picture input[type="file"] {
+			cursor: pointer;
+			display: block;
+			height: 100%;
+			left: 0;
+			opacity: 0 !important;
+			position: absolute;
+			top: 0;
+			width: 100%;
+		}
+
+		.picture-src{
+			width: 100%;
+			
+		}
+	</style>
+{% endblock %}	
+{% block content %}
+
+<div class="row" style="padding: 50px;">
+	<div class="col-md-12">
+<form action="{{ path_for('form.inputcube') }}" method="POST" enctype="multipart/form-data" name="form1" autocomplete="off">
+		<div class="panel panel-default">
+			<div class="panel-heading" style="overflow: hidden; background-color: #ffe8b0;">
+				<div class="pull-left"><h4>Input Lokasi</h4></div> 
+				<div class="pull-right">
+					<input type="submit"  class="btn btn-md btn-primary" style="color: black;background-color: #ffc950;border-color: rgba(255, 216, 122, 0);" value="Simpan">
+					<a type="reset"  class="btn btn-md btn-primary" style="color: black;background-color: #ffc950;border-color: rgba(255, 216, 122, 0);" value="Batal">batal </a> 
+				</div>
+			</div>
+			<div class="panel-body">  
+					<div class="row">
+						<div class="col-md-5 pull-left"> 
+							<div class="col-md-12 
+								{{errors.nama_lokasi ? ' has-error' : ''}}
+								{{errors.deskripsi ? ' has-error' : ''}}
+								{{errors.kategori ? ' has-error' : ''}}
+								{{errors.userlevel ? ' has-error' : ''}} 
+							"> 
+								<label>Nama Lokasi</label>
+								<input type="text" name="nama_lokasi" class="form-control" placeholder="Nama Lokasi" required="required" value="{{ old.nama_lokasi}}"><br />
+								{% if errors.username %}
+									<span class="help-block">{{ errors.nama_lokasi | first }}</span>
+								{% endif %}<br/>
+								<label>Deskripsi</label>
+								<textarea class="form-control" name="deskripsi" placeholder="Deskripsi" rows="5" required="required">{{ old.nama_lokasi}}</textarea><br />
+								<label>Pilih Kategori</label>
+								<select class="form-control" name="kategori" rows="5">
+									{% for i in 1..data.kategori|length %}
+										<option value="{{ data.kategori[i-1]['id_kategori'] }}"> {{i}}.{{ data.kategori[i-1]['nama_kategori'] }}</option> 
+									{% endfor %}
+								</select><br/>
+								<label>User yang dapat mengakses</label>
+								<select class="form-control" name="userlevel" rows="5"> 
+									<option value="1">User Level 1</option> 
+									<option value="2">User Level 2</option> 
+									<option value="3">Public</option> 
+								</select> 
+							</div> 
+						</div> 
+					<!-- </div>
+					<div class="row"> -->
+						<div class="col-md-7 pull-right">
+							<div class="col-md-4 pull-left"> 
+								<div class="picture-container">
+									<div class="picture {{errors.map1 ? ' has-error' : ''}}">
+										<img src="{{base_url()}}/assets/img/up.png"  class="picture-src" id="wizardPicturePreview1" title="">
+										<input type="file" id="wizard-picture1" name="map1" onchange="uploadimgval(1)" required="required"/>
+									</div>
+									<h6 class="">Choose Map 001</h6> 
+								</div>
+							</div>
+							<div class="col-md-4 pull-left"> 
+								<div class="picture-container">
+									<div class="picture {{errors.map2 ? ' has-error' : ''}}">
+										<img src="{{base_url()}}/assets/img/up.png"  class="picture-src" id="wizardPicturePreview2" title="">
+										<input type="file" id="wizard-picture2" name="map2" onchange="uploadimgval(2)" required="required"/>
+									</div>
+									<h6 class="">Choose Map 002</h6> 
+								</div>
+							</div>
+							<div class="col-md-4 pull-left"> 
+								<div class="picture-container">
+									<div class="picture {{errors.map3 ? ' has-error' : ''}}">
+										<img src="{{base_url()}}/assets/img/up.png"  class="picture-src" id="wizardPicturePreview3" title="">
+										<input type="file" id="wizard-picture3" name="map3" onchange="uploadimgval(3)" required="required"/>
+									</div>
+									<h6 class="">Choose Map 003</h6> 
+								</div>
+							</div>
+							<div class="col-md-4 pull-left"> 
+								<div class="picture-container">
+									<div class="picture {{errors.map4 ? ' has-error' : ''}}">
+										<img src="{{base_url()}}/assets/img/up.png"  class="picture-src" id="wizardPicturePreview4" title="">
+										<input type="file" id="wizard-picture4" name="map4" onchange="uploadimgval(4)" required="required"/>
+									</div>
+									<h6 class="">Choose Map 004</h6> 
+								</div>
+							</div>
+							<div class="col-md-4 pull-left"> 
+								<div class="picture-container">
+									<div class="picture {{errors.map5 ? ' has-error' : ''}}">
+										<img src="{{base_url()}}/assets/img/up.png"  class="picture-src" id="wizardPicturePreview5" title="">
+										<input type="file" id="wizard-picture5" name="map5" onchange="uploadimgval(5)" required="required"/>
+									</div>
+									<h6 class="">Choose Map 005</h6> 
+								</div>
+							</div>
+							<div class="col-md-4 pull-left"> 
+								<div class="picture-container">
+									<div class="picture {{errors.map6 ? ' has-error' : ''}}">
+										<img src="{{base_url()}}/assets/img/up.png"  class="picture-src" id="wizardPicturePreview6" title="">
+										<input type="file" id="wizard-picture6" name="map6" onchange="uploadimgval(6)" required="required"/>
+									</div>
+									<h6 class="">Choose Map 006</h6> 
+								</div>
+							</div>	
+						</div>
+					</div>
+					{{ csrf.field | raw }}
+			</div>
+			<div style="min-height: 30px;"></div>
+		</div>
+		</form>
+	</div>
+</div>
+
+<script type="text/javascript"> 
+	function uploadimgval(no){
+		// Prepare the preview for profile picture
+		if(Validate("wizard-picture"+no)){
+			imageview(document.getElementById("wizard-picture"+no) ,no); 	
+		}
+		
+	};
+
+	var _validFileExtensions = [".jpg", ".jpeg", ".bmp", ".gif", ".png"];   
+	function Validate(inputan) {
+   		var inputfield = document.getElementById(inputan); 
+        var afilename = inputfield.value;
+        if (afilename.length > 0) {
+            var blnValid = false;
+            for (var j = 0; j < _validFileExtensions.length; j++) {
+                var sCurExtension = _validFileExtensions[j];
+                if (afilename.substr(afilename.length - sCurExtension.length, sCurExtension.length).toLowerCase() == sCurExtension.toLowerCase()) {
+                    blnValid = true;
+                    break;
+                }
+            } 
+            if (!blnValid) {
+                alert("Maaf, " + afilename + "bukan file dengan extensi yang benar, masukan file dengan format :" + _validFileExtensions.join(", "));
+               	$('#'+inputan).attr('value', null ); 
+                return false;
+
+            }
+        }  
+	    return true;
+	}
+
+	function imageview(input,no) {
+		var _URL = window.URL || window.webkitURL;	
+		var $this = $(input);
+		var img;
+	 	img = new Image();
+		img.onload = function(e) {
+			if((this.width/this.height) == 1){
+				if (input.files && input.files[0]) {
+					var reader = new FileReader();
+					reader.onload = function (e) {
+						$('#wizardPicturePreview'+no).attr('src', e.target.result).fadeIn('slow'); 
+					}
+					reader.readAsDataURL(input.files[0]);
+					 
+				}else{ 
+					$('#wizardPicturePreview'+no).attr('src', '{{base_url()}}/assets/img/up.png' ).fadeIn('slow'); 
+					$("#wizard-picture"+no).attr('value', null ); 
+				}	
+				 			 
+			}else{
+				alert("Aspect Ratio gambar yang dimasukan tidak 1:1");
+				$('#wizardPicturePreview'+no).attr('src', '{{base_url()}}/assets/img/up.png' ).fadeIn('slow'); 
+				$("#wizard-picture"+no).attr('value', null ); 
+			}
+		} 
+		img.src = _URL.createObjectURL(input.files[0]);
+	}
+</script>
+{% endblock %}

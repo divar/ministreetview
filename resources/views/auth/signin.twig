@@ -1,0 +1,33 @@
+{% extends 'templates/app.twig' %}
+{% block nav %}{% include 'templates/partials/navigationpolos.twig' %}{% endblock %}
+{% block content %}
+<div class="container">
+	<div class="row" style="padding-top: 155px">
+		<div class="col-md-6 col-md-offset-3">
+			<div class="panel panel-default">
+				<div class="panel-heading">Sign In</div>
+				<div class="panel-body"> 
+					<form action="{{ path_for('auth.signin') }}" method="post" autocomplete="off"> 
+						<div class="form-group {{errors.email ? ' has-error' : ''}}">
+							<label for="email">email</label>
+							<input type="email" name="email" id="email" placeholder="you@domain.com" class="form-control" value="{{ old.email }}">
+							{% if errors.email %}
+								<span class="help-block">{{ errors.email | first }}</span>
+							{% endif %}
+						</div>
+						<div class="form-group {{errors.shadow ? ' has-error' : ''}}">
+							<label for="Password">Password</label>
+							<input type="Password" name="shadow" id="Password" class="form-control">
+							{% if errors.shadow %}
+								<span class="help-block">{{ errors.shadow | first }}</span>
+							{% endif %}
+						</div>
+						<button type="submit" class="btn button-default">Sign In</button>
+						{{ csrf.field | raw }}
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

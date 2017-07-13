@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>{% block titles %}{% endblock %}</title>
+	 
+    <!-- Bootstrap core CSS -->
+    <link href="{{base_url()}}/assets/css/bootstrap.css" rel="stylesheet">
+ 
+    <link href="{{base_url()}}/assets/font-awesome/css/font-awesome.css" rel="stylesheet" />  
+    <!-- Custom styles for this template -->
+    <link href="{{base_url()}}/assets/css/style.css" rel="stylesheet">
+    <link href="{{base_url()}}/assets/css/style-responsive.css" rel="stylesheet"> 
+	{% block headertambahan %}{% endblock %}
+    <style type="text/css">
+        #hideme {
+            -moz-animation: cssAnimation 1s ease-out 0s forwards;
+            /* Firefox */
+            -webkit-animation: cssAnimation 1s ease-out 0s forwards;
+            /* Safari and Chrome */
+            -o-animation: cssAnimation 1s ease-out 0s forwards;
+            /* Opera */
+            animation: cssAnimation 1s ease-out 0s forwards;
+            animation-delay: 2s;
+
+            -webkit-animation-fill-mode: forwards;
+            animation-fill-mode: forwards;
+            
+            transition:opacity 1s linear;
+        }
+        @keyframes cssAnimation {
+            to { 
+                visibility:hidden;
+                opacity: 0; 
+            }
+        }
+        @-webkit-keyframes cssAnimation {
+            to { 
+                visibility:hidden;
+                opacity: 0; 
+            }
+        }
+    </style>
+</head>
+<body>
+	<section id="container">
+    
+        {% block nav %}{% endblock %}
+        <div style="padding-top:59px; display: block;"></div>
+        {% block sidebar %}{% endblock %}
+        {% include 'templates/partials/flash.twig' %}
+        {% block content %}{% endblock %}        
+     
+    {% block footer %}{% endblock %}
+
+	</section>
+
+    <script src="{{base_url()}}/assets/js/jquery-1.8.3.min.js"></script>
+    <script src="{{base_url()}}/assets/js/bootstrap.min.js"></script>
+    <script src="{{base_url()}}/assets/js/jquery.nicescroll.js" type="text/javascript"></script>
+	<!--common script for all pages--> 
+    <script src="{{base_url()}}/assets/js/common-scripts.js"></script><!--hide the sidebar--> 
+    <script class="include" type="text/javascript" src="{{base_url()}}/assets/js/jquery.dcjqaccordion.2.7.js"></script>
+    <script src="{{base_url()}}/assets/js/jquery.scrollTo.min.js"></script>
+</body>
+</html>

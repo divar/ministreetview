@@ -1,0 +1,104 @@
+{% extends 'templates/app.twig' %}
+{% block headertambahan %}
+	
+{% endblock %}
+
+{% block nav %}
+	{% include 'templates/partials/navigation.twig' %}
+{% endblock %}
+
+{% block sidebar %} 
+	{% include 'templates/partials/sidebar.twig' %} 
+{% endblock %}
+
+{% block content %}
+<section id="main-content">
+<div class="row" style="padding: 30px;">
+	<div class="col-md-12">
+		<div class="panel panel-success">
+			<div class="panel-heading">
+				<div class="nav">
+				<h3 class="panel-title pull-left">Data User</h3>
+				<div class="nav pull-right">
+					<span class="clickable filter" data-toggle="tooltip" title="" data-container="body" data-original-title="Show Filter">
+						<i class="glyphicon glyphicon-search"></i>
+					</span>
+				</div>
+				</div>
+			</div>
+			<div class="panel-body" style="display:none;">
+				<input type="text" class="form-control" id="task-table-filter" data-action="filter" data-filters="#task-table" placeholder="Filter Tasks"> 
+			</div>
+			<table class="table table-hover" id="task-table" data-tabel="task-table">
+				<thead>
+					<tr data-status="head" class="bg-info" >
+						<td>#</td>
+						<td>User Name</td>
+						<td>Email</td>
+						<td>User Level</td>
+						<td width="150px" align="center">Info Spot</td>
+					</tr>
+				</thead>
+				<tbody>
+				{% if data.table|length<=0 %}
+					<td colspan="5"> Tidak ada data yang bisa ditampilkan untuk anda </td>
+				{% else %}
+					{% for o in 1..data.table|length %}
+						<tr data-status="{{data.table[o-1][id_kategori]}}">
+							<td> {{o}} </td>
+							<td> {{data.table[o-1]['username']}} </td>
+							<td> {{data.table[o-1]['email']}} </td>
+							<td> {{data.table[o-1]['user_level']}}</td> 
+							<td align="center" valign="top"> 
+								<a href="{{path_for('admin.deleteUser')}}?id={{data.table[o-1]['id']}}" class="btn btn-xs btn-primary"><i class="glyphicon glyphicon-trash"></i></a>
+								<button type="button" class="btn btn-primary btn-xs" onclick="fill({{data.table[o-1]['user_level']}},{{data.table[o-1]['id']}})" data-toggle="modal" data-target="#myModal">
+							  		<i class="glyphicon glyphicon-pencil"></i>
+								</button>
+							</td> 
+						</tr>
+					{% endfor %}
+				{% endif %}		 
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+</section>
+<script type="text/javascript" src="{{base_url()}}/assets/js/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="{{base_url()}}/assets/js/customtablefilter.js"></script>
+<script type="text/javascript">
+	function fill(userlevel, userId){
+		document.getElementById('userlevelfield').value = userlevel;
+		document.getElementById('userId').value = userId;
+	}
+</script>
+<script type="text/javascript">
+		(function () {
+		  $('[data-toggle="tooltip"]').tooltip();
+		})
+</script>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+    <form action="{{ path_for('admin.datauser') }}" method="POST" enctype="multipart/form-data" name="form1" autocomplete="off">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title" id="myModalLabel">Ubah User Level</h4>
+		</div>
+		<div class="modal-body">
+			<div class="form-group">
+				<label for="userlevel">User Level</label>
+    			<input type="text" class="form-control" id="userlevelfield" name="userLevel" placeholder="0">
+    			<input type="hidden" class="form-control" id="userId" name="userId" placeholder="0">
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button type="reset" class="btn btn-default" data-dismiss="modal">batal</button>
+			<button type="submit" class="btn btn-primary">Simpan</button>
+		</div>
+		{{ csrf.field | raw }}
+    </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

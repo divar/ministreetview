@@ -1,0 +1,228 @@
+{% extends 'templates/app.twig' %}
+{% block sidebar %}
+
+	{% include 'templates/partials/sidebar.twig' %}
+
+{% endblock %}
+
+{% block headertambahan %}
+	<script src="{{base_url()}}/assets/js/tree/three.js"></script>
+    <script src="{{base_url()}}/assets/js/tree/Projector.js"></script>
+    <script src="{{base_url()}}/assets/js/tree/CanvasRenderer.js"></script>
+    <script src="{{base_url()}}/assets/js/tree/stats.min.js"></script> 
+    <script src="{{base_url()}}/assets/js/chart-master/Chart.js"></script> 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+    <link href="{{base_url()}}/assets/css/tree/tree.css" rel="stylesheet" type="text/css" /> 
+{% endblock %}
+
+{% block nav %}
+	{% include 'templates/partials/navigation.twig' %}
+{% endblock %}
+
+{% block content %} 
+	 <!-- <img src="data:image/gif;base64, {{ data.maps }}"> -->
+	<div">
+		<div id="vr"></div>
+	</div>
+
+	 
+	<script>
+		var camera, scene, renderer;
+		var texture_placeholder, isUserInteracting = false, onMouseDownMouseX = 0, onMouseDownMouseY = 0,lon = 90, onMouseDownLon = 0,lat = 0, onMouseDownLat = 0, phi = 0, theta = 0, target = new THREE.Vector3();
+		var objects = [];
+		var bolean=true;
+		var raycaster;
+		var mouse;
+		var isSelected;
+		var keterangan =  {{ data.keterangan|raw }}; 
+		
+		var xra = (window.innerHeight - 60)/window.innerHeight;
+		init();
+		animate();
+
+		function init() {
+			var container;
+			container = document.getElementById( 'vr' );
+			camera = new THREE.PerspectiveCamera( 75, window.innerWidth / (xra*window.innerHeight), 1, 1100 );
+			scene = new THREE.Scene();
+			texture_placeholder = document.createElement( 'canvas' );
+			texture_placeholder.width = 128;
+			texture_placeholder.height = 128;
+			var context = texture_placeholder.getContext( '2d' );
+			context.fillStyle = 'rgb( 200, 200, 200 )';
+			context.fillRect( 0, 0, texture_placeholder.width, texture_placeholder.height );
+			//material cubemap
+			var materials = [ 
+				loadTexture( "data:image/jpg;base64,{{ data.cubemap.map4 }}" ), // right
+				loadTexture( "data:image/jpg;base64,{{ data.cubemap.map2 }}" ), // left
+				loadTexture( "data:image/jpg;base64,{{ data.cubemap.map6 }}" ), // top
+				loadTexture( "data:image/jpg;base64,{{ data.cubemap.map5 }}" ), // bottom
+				loadTexture( "data:image/jpg;base64,{{ data.cubemap.map1 }}" ), // back
+				loadTexture( "data:image/jpg;base64,{{ data.cubemap.map3 }}" )  // front  
+			];
+			//cubemap
+			var mesh = new THREE.Mesh( new THREE.BoxGeometry( 300, 300, 300, 7, 7, 7 ), new THREE.MultiMaterial( materials ) );
+			mesh.scale.x = - 1;
+			mesh.position.x = 0 ;
+			mesh.name = "mesh";
+			scene.add( mesh );
+			objects.push( mesh ); 
+			
+			raycaster = new THREE.Raycaster();
+			mouse = new THREE.Vector2();
+			
+			renderer = new THREE.CanvasRenderer();
+			renderer.setPixelRatio( window.devicePixelRatio );
+			renderer.setSize( window.innerWidth, window.innerHeight*xra );
+			container.appendChild( renderer.domElement );
+			
+			stats = new Stats();
+			
+			container.addEventListener( 'mousedown', onDocumentMouseDown, false );
+			container.addEventListener( 'mousemove', onDocumentMouseMove, false );
+			container.addEventListener( 'mouseup', onDocumentMouseUp, false );
+			document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+			container.addEventListener( 'wheel', onDocumentMouseWheel, false );
+
+			container.addEventListener( 'touchstart', onDocumentTouchStart, false );
+			container.addEventListener( 'touchmove', onDocumentTouchMove, false );
+			
+			window.addEventListener( 'resize', onWindowResize, false );
+			for(i=0;i<keterangan.length;i++){
+				tambahinfo(keterangan[i]["posx"],keterangan[i]["posy"],keterangan[i]["posz"],keterangan[i]["id_ket"]);
+			}
+		}
+		function onWindowResize() { 
+			camera.aspect = window.innerWidth / (xra*window.innerHeight);
+			camera.updateProjectionMatrix();  
+			renderer.setSize( window.innerWidth, window.innerHeight*xra ); 
+		}
+		function loadTexture( path ) { 
+			var texture = new THREE.Texture( texture_placeholder );
+			var material = new THREE.MeshBasicMaterial( { map: texture, overdraw: 0.5 } ); 
+			var image = new Image();
+			image.onload = function () { 
+				texture.image = this;
+				texture.needsUpdate = true; 
+			};
+			image.src = path;
+			return material;
+		}
+		function onDocumentMouseDown( event ) {
+
+			event.preventDefault();
+			isUserInteracting = true; 
+			
+			onPointerDownPointerX = event.clientX;
+			onPointerDownPointerY = event.clientY; 
+			
+			onPointerDownLon = lon;
+			onPointerDownLat = lat; 
+			
+			mouse.x = ( (event.clientX - renderer.domElement.offsetLeft) / renderer.domElement.clientWidth ) * 2 - 1;
+			mouse.y = - (( event.clientY - renderer.domElement.offsetTop )/ renderer.domElement.clientHeight ) * 2 + 1;
+			
+			raycaster.setFromCamera( mouse, camera ); 
+			var intersects = raycaster.intersectObjects( objects ); 
+			if ( intersects.length > 0 ) { 
+				var judul = document.getElementById('judul');
+				var deskripsi = document.getElementById('deskripsi');
+				judul.innerHTML = keterangan[intersects[0].object.name-1]["judul"];
+				deskripsi.innerHTML = keterangan[intersects[0].object.name-1]["deskripsi"];
+				$('#myModal').modal('show');
+				isUserInteracting = false;
+			}  
+		} 
+		function onDocumentMouseMove( event ) {
+			if ( isUserInteracting === true ) {
+				lon = ( onPointerDownPointerX - event.clientX ) * 0.1 + onPointerDownLon;
+				lat = ( event.clientY - onPointerDownPointerY ) * 0.1 + onPointerDownLat;
+				bolean=false;
+			}
+		}
+		function onDocumentMouseUp( event ) {
+			isUserInteracting = false; 
+		}
+		function onDocumentMouseWheel( event ) {
+			//camera.fov += event.deltaY * 0.05;
+			//camera.updateProjectionMatrix();
+		}
+		function onDocumentTouchStart( event ) {
+
+			if ( event.touches.length == 1 ) {
+
+				event.preventDefault();
+
+				onPointerDownPointerX = event.touches[ 0 ].pageX;
+				onPointerDownPointerY = event.touches[ 0 ].pageY;
+
+				onPointerDownLon = lon;
+				onPointerDownLat = lat;
+				
+				event.clientX = event.touches[0].clientX;
+				event.clientY = event.touches[0].clientY;
+				onDocumentMouseDown( event );
+
+			}
+
+		}
+		function onDocumentTouchMove( event ) {
+
+			if ( event.touches.length == 1 ) { 
+				event.preventDefault();
+				lon = ( onPointerDownPointerX - event.touches[0].pageX ) * 0.1 + onPointerDownLon;
+				lat = ( event.touches[0].pageY - onPointerDownPointerY ) * 0.1 + onPointerDownLat; 
+			}
+		}
+		function animate() { 
+			requestAnimationFrame( animate );
+			update(); 
+		}
+		function tambahinfo(x,y,z,name){
+			var objek = new THREE.Mesh( new THREE.SphereGeometry( 4, 60 , 60  ), new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, opacity: 1 } ) );
+			objek.position.x = x;
+			objek.position.y = y;
+			objek.position.z = z;
+			objek.name = objects.length;
+			scene.add( objek );
+			objects.push( objek );
+			console.log(objects.length);
+		}
+		function update() {
+			if ( isUserInteracting === false ) { 
+				lon += 0  ; 
+			}
+			lat = Math.max( - 85, Math.min( 85, lat ) );
+			phi = THREE.Math.degToRad( 90 - lat );
+			theta = THREE.Math.degToRad( lon );
+
+			target.x = 500 * Math.sin( phi ) * Math.cos( theta );
+			target.y = 500 * Math.cos( phi );
+			target.z = 500 * Math.sin( phi ) * Math.sin( theta );
+
+			camera.lookAt( target );
+
+			renderer.render( scene, camera );
+		}
+		</script>
+	<!-- <div id="popup1" class="overlay">
+		<div class="popup" style="min-height:200px;">   -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+		  <div class="modal-dialog" role="document">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <a class="close" href="#" data-dismiss="modal">&times;</a>
+		        <h4 class="modal-title" id="judul">judul</h4>
+		      </div>
+		      <div class="modal-body">
+		        <p><div class="content" id="deskripsi"></div></p>
+		      </div>
+		      <div class="modal-footer">
+		       <a   href="#"> <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> </a>
+		      </div>
+		    </div> 
+		  </div>  
+		  </div>  
+		<!-- </div>
+	</div>	 -->
+{% endblock %}

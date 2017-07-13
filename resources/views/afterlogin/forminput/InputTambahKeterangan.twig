@@ -1,0 +1,314 @@
+{% extends 'templates/app.twig' %}
+ 
+
+{% block headertambahan %}
+	<script src="{{base_url()}}/assets/js/tree/three.js"></script>
+    <script src="{{base_url()}}/assets/js/tree/Projector.js"></script>
+    <script src="{{base_url()}}/assets/js/tree/CanvasRenderer.js"></script>
+    <script src="{{base_url()}}/assets/js/tree/stats.min.js"></script> 
+    <script src="{{base_url()}}/assets/js/chart-master/Chart.js"></script> 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+    <link href="{{base_url()}}/assets/css/tree/tree.css" rel="stylesheet" type="text/css" /> 
+{% endblock %}
+
+{% block nav %}
+	{% include 'templates/partials/navigationpolos.twig' %}
+{% endblock %}
+
+{% block content %} 
+	 <!-- <img src="data:image/gif;base64, {{ data.maps }}"> -->
+	<div class="" style="padding: 7px 7px 0px 7px;	position: fixed;z-index: 1070; right: 0px; top: 30%; background: rgba(255, 253, 183, 0.46); border-radius: 4px; ">
+		<div class="form-group">
+			<button type="button" class="btn btn-primary"  data-toggle="tooltip" data-placement="top" title data-original-title="tambah keterangan" onmousedown="tambahinfo();">
+				<i class="glyphicon glyphicon-plus"></i>
+			</button>
+		</div>  
+		<div class="form-group" >
+			<a href=" {{ path_for('user.dashboard') }} "><button type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title data-original-title="Batal">
+				<i class="glyphicon glyphicon-remove"></i>
+			</button></a>
+		</div> 
+		<div class="form-group" style="margin-bottom: 8px;" data-toggle="tooltip" data-placement="top" title data-original-title="simpan">
+			<button type="button" class="btn btn-primary" onclick="kirim();"><i class="glyphicon glyphicon-floppy-disk"></i></button>
+		</div> 
+	</div>
+	
+	<div">
+		<div id="vr"></div>
+	</div>
+	
+	<script type="text/javascript">
+		(function () {
+		  $('[data-toggle="tooltip"]').tooltip();
+		})
+	</script>
+	<script type="text/javascript"> 
+		var camera, scene, renderer;
+		var texture_placeholder, isUserInteracting = false, onMouseDownMouseX = 0, onMouseDownMouseY = 0,lon = 90, onMouseDownLon = 0,lat = 0, onMouseDownLat = 0, phi = 0, theta = 0, target = new THREE.Vector3();
+		var objects = [];
+		var mousemovebolean=true;
+		var raycaster;
+		var mouse;
+		var isSelected;
+		var keterangan =  []; 
+		var xra = (window.innerHeight - 60)/window.innerHeight;
+		init();
+		animate();
+
+		function init() {
+			var container;
+			container = document.getElementById( 'vr' );
+			camera = new THREE.PerspectiveCamera( 75, window.innerWidth / (xra*window.innerHeight), 1, 1100 );
+			scene = new THREE.Scene();
+			texture_placeholder = document.createElement( 'canvas' );
+			texture_placeholder.width = 128;
+			texture_placeholder.height = 128;
+			var context = texture_placeholder.getContext( '2d' );
+			context.fillStyle = 'rgb( 200, 200, 200 )';
+			context.fillRect( 0, 0, texture_placeholder.width, texture_placeholder.height );
+			//material cubemap
+			var materials = [ 
+				loadTexture( "data:image/jpg;base64,{{ data.cubemap.map4 }}" ), // right
+				loadTexture( "data:image/jpg;base64,{{ data.cubemap.map2 }}" ), // left
+				loadTexture( "data:image/jpg;base64,{{ data.cubemap.map6 }}" ), // top
+				loadTexture( "data:image/jpg;base64,{{ data.cubemap.map5 }}" ), // bottom
+				loadTexture( "data:image/jpg;base64,{{ data.cubemap.map1 }}" ), // back
+				loadTexture( "data:image/jpg;base64,{{ data.cubemap.map3 }}" )  // front  
+			];
+			//cubemap
+			var mesh = new THREE.Mesh( new THREE.BoxGeometry( 300, 300, 300, 7, 7, 7 ), new THREE.MultiMaterial( materials ) );
+			mesh.scale.x = - 1;
+			mesh.position.x = 0 ;
+			mesh.name = "mesh";
+			scene.add( mesh );
+			objects.push( mesh ); 
+			
+			var kotakcolision = new THREE.Mesh( new THREE.BoxGeometry( 290, 290, 290 ), new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, opacity: 0.0 } )  );
+			kotakcolision.material.side = THREE.DoubleSide;
+			kotakcolision.position.x = 0 ;
+			kotakcolision.position.y = 0 ;
+			kotakcolision.position.z = 0 ;
+			kotakcolision.name = "kotakcolision";
+			scene.add( kotakcolision );
+			objects.push(kotakcolision); 
+
+			raycaster = new THREE.Raycaster();
+			mouse = new THREE.Vector2();
+			
+			renderer = new THREE.CanvasRenderer();
+			renderer.setPixelRatio( window.devicePixelRatio );
+			renderer.setSize( window.innerWidth, window.innerHeight*xra );
+			container.appendChild( renderer.domElement );
+			
+			stats = new Stats();
+			
+			container.addEventListener( 'mousedown', onDocumentMouseDown, false );
+			container.addEventListener( 'mousemove', onDocumentMouseMove, false );
+			container.addEventListener( 'mouseup', onDocumentMouseUp, false );
+			document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+			container.addEventListener( 'wheel', onDocumentMouseWheel, false );
+
+			container.addEventListener( 'touchstart', onDocumentTouchStart, false );
+			container.addEventListener( 'touchmove', onDocumentTouchMove, false );
+			
+			window.addEventListener( 'resize', onWindowResize, false );
+		}
+		function onWindowResize() { 
+			camera.aspect = window.innerWidth / (xra*window.innerHeight);
+			camera.updateProjectionMatrix();  
+			renderer.setSize( window.innerWidth, window.innerHeight*xra ); 
+		}
+		function loadTexture( path ) { 
+			var texture = new THREE.Texture( texture_placeholder );
+			var material = new THREE.MeshBasicMaterial( { map: texture, overdraw: 0.5 } ); 
+			var image = new Image();
+			image.onload = function () { 
+				texture.image = this;
+				texture.needsUpdate = true; 
+			};
+			image.src = path;
+			return material;
+		}
+		function onDocumentMouseDown( event ) {
+
+			event.preventDefault();
+			isUserInteracting = true; 
+			
+			onPointerDownPointerX = event.clientX;
+			onPointerDownPointerY = event.clientY; 
+			
+			onPointerDownLon = lon;
+			onPointerDownLat = lat; 
+			
+			mouse.x = ( (event.clientX - renderer.domElement.offsetLeft) / renderer.domElement.clientWidth ) * 2 - 1;
+			mouse.y = - (( event.clientY - renderer.domElement.offsetTop )/ renderer.domElement.clientHeight ) * 2 + 1;
+			
+			raycaster.setFromCamera( mouse, camera ); 
+			var intersects = raycaster.intersectObjects( objects );
+			if ( intersects.length > 0 && isSelected == intersects[0].object.name ) {
+					document.getElementById("idinfo").value =  isSelected ;
+					document.getElementById("judul").value = keterangan[isSelected-2][1];
+					document.getElementById("deskripsi").value = keterangan[isSelected-2][2];
+					
+					$('#myModal').modal('show');
+					isUserInteracting = false;
+			} 
+			if( intersects.length>0 ){
+				var target = intersects[0].object;
+				if(target.name != "kotakcolision"){
+					isSelected = target.name;console.log( intersects[0].object.name );
+				}
+			}
+			mousemovebolean=true; 
+		}
+		function tambahinfo(){
+			mousemovebolean=false; 
+			var objek = new THREE.Mesh( new THREE.SphereGeometry( 4, 60 , 60  ), new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, opacity: 1 } ) ); 
+			objek.position.x = 0 ;
+			objek.position.y = 11;
+			objek.position.z = 130 ;
+			objek.name = String(objects.length);
+			scene.add( objek );
+			objects.push( objek );
+			var tempdesk = ["","","",objek.position.x,objek.position.y,objek.position.z];
+			keterangan.push(tempdesk);
+		}
+		function hapusinfo(){
+			var x = parseInt(document.getElementById("idinfo").value);
+			document.getElementById("idinfo").value = ""; 
+			isSelected=null; 
+			objects[x].material.dispose();
+			objects[x].geometry.dispose();
+			scene.remove( objects[x]);
+			keterangan[x-2][3] = ""; keterangan[x-2][4] = ""; keterangan[x-2][5] = "";
+			console.log(keterangan[x-2][3]);
+			$('#myModal').modal('hide');
+		}
+		function kirim(){
+		var temperari = [];
+			for(i=0;i<keterangan.length;i++){
+				if(keterangan[i][3] !="" && keterangan[i][4] != "" && keterangan[i][5] != ""){
+					temperari.push(keterangan[i]); 
+				}
+			}
+			$.ajax({        
+			   method: "POST", 
+			   enctype:"multipart/form-data",
+			   url: "{{ path_for('form.postinputketerangan') }}", 
+			   data: {activitiesArray:temperari, id:"{{ data.cubemap.id_cube }}"},
+			   success: function(response) {
+					window.open("{{ path_for('user.dashboard') }}","_self");
+			   }
+			});
+		}
+		function simpanketerangan(){
+			var x = parseInt(document.getElementById("idinfo").value); 
+			keterangan[x-2][0] = document.getElementById("idinfo").value;
+			keterangan[x-2][1] = document.getElementById("judul").value;
+			keterangan[x-2][2] = document.getElementById("deskripsi").value; 
+			$('#myModal').modal('hide');
+		}
+
+		function onDocumentMouseMove( event ) {
+			if ( isUserInteracting === true ) {
+				lon = ( onPointerDownPointerX - event.clientX ) * 0.1 + onPointerDownLon;
+				lat = ( event.clientY - onPointerDownPointerY ) * 0.1 + onPointerDownLat;
+				mousemovebolean=false;
+			}
+		}
+		function onDocumentMouseUp( event ) {
+			isUserInteracting = false;
+			if(mousemovebolean == true){
+				raycaster.setFromCamera( mouse, camera ); 
+				var intersects = raycaster.intersectObjects( objects );
+				if ( intersects.length >0 && intersects[0].object.name == "kotakcolision") { 
+					objects[isSelected].position.copy( intersects[0].point );
+					 keterangan[isSelected-2][3] = objects[isSelected].position.x;
+					 keterangan[isSelected-2][4] = objects[isSelected].position.y;
+					 keterangan[isSelected-2][5] = objects[isSelected].position.z;
+					// console.log(objects[isSelected].position.x);
+				}
+			}
+		}
+		function onDocumentMouseWheel( event ) {
+			//camera.fov += event.deltaY * 0.05;
+			//camera.updateProjectionMatrix();
+		}
+		function onDocumentTouchStart( event ) {
+
+			if ( event.touches.length == 1 ) {
+
+				event.preventDefault();
+
+				onPointerDownPointerX = event.touches[ 0 ].pageX;
+				onPointerDownPointerY = event.touches[ 0 ].pageY;
+
+				onPointerDownLon = lon;
+				onPointerDownLat = lat;
+				
+				event.clientX = event.touches[0].clientX;
+				event.clientY = event.touches[0].clientY;
+				onDocumentMouseDown( event );
+
+			}
+
+		}
+		function onDocumentTouchMove( event ) {
+			if ( event.touches.length == 1 ) { 
+				event.preventDefault();
+				lon = ( onPointerDownPointerX - event.touches[0].pageX ) * 0.1 + onPointerDownLon;
+				lat = ( event.touches[0].pageY - onPointerDownPointerY ) * 0.1 + onPointerDownLat; 
+			}
+		}
+		function animate() { 
+			requestAnimationFrame( animate );
+			update(); 
+		}
+		function update() {
+			if ( isUserInteracting === false ) { 
+				lon += 0  ; 
+			}
+			lat = Math.max( - 85, Math.min( 85, lat ) );
+			phi = THREE.Math.degToRad( 90 - lat );
+			theta = THREE.Math.degToRad( lon );
+
+			target.x = 500 * Math.sin( phi ) * Math.cos( theta );
+			target.y = 500 * Math.cos( phi );
+			target.z = 500 * Math.sin( phi ) * Math.sin( theta );
+
+			camera.lookAt( target );
+
+			renderer.render( scene, camera );
+		}
+		</script>
+	<!-- <div id="popup1" class="overlay">
+		<div class="popup" style="min-height:200px;">   -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+		  <div class="modal-dialog" role="document">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <a class="close" href="#" data-dismiss="modal">&times;</a>
+		        <h4 class="modal-title">Tambah Informasi</h4>
+		      </div>
+		      <div class="modal-body">
+		        <div class="form-group">
+   					<input type="hidden" class="form-control" id="idinfo" name="idinfo" placeholder="id">
+		        </div>
+		        <div class="form-group">
+		        	<input type="text" placeholder="Judul informasi" name="judulinfo" class="form-control" id="judul" requaired/><br />
+				</div>
+		        <div class="form-group">
+		        	<label for="deskripsi">Name</label>
+   					<textarea cols="50" rows="10" class="form-control" placeholder="Deskripsi" id="deskripsi" requaired></textarea>
+		        </div>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-default" onclick="simpanketerangan();">simpan</button> 
+		        <button type="button" class="btn btn-default" onclick="hapusinfo();">hapus</button>
+		      </div>
+		    </div> 
+		  </div>  
+		</div>  
+		<!-- </div>
+	</div>	 -->
+{% endblock %}

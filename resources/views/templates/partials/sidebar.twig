@@ -1,0 +1,30 @@
+<aside>
+	<div id="sidebar"  class="nav-collapse ">
+	  <!-- sidebar menu start-->
+		<ul class="sidebar-menu" id="nav-accordion">
+		{% if data.datakategori|length > 0 %} 
+			{% for o in 1..data.datakategori|length %} 
+				<li class="sub-menu"> 
+					<a href="javascript:;" >
+	                  <i class=" fa fa-bar-chart-o"></i>
+	                  <span>{{data.datakategori[o-1]['nama_kategori']}}</span>
+	                </a>
+					<ul class="sub">   
+					  {% for i in 1..data.datanav|length %} 
+						  {% if data.datanav[ i-1 ]['id_kategori'] == data.datakategori[o-1]['id_kategori'] %}
+							  <li {% if data.datanav[ i-1 ]['id_cube'] == data.cubemap.id_cube %} class="active"{% endif %}>  
+									<a href="{{base_url()}}?idcube={{data.datanav[ i-1 ]['id_cube']}}">
+										 {{ data.datanav[i-1]['nama_tempat']}}
+									</a>
+							  </li> 
+						  {% endif %}
+					  {% endfor %}
+					</ul>
+				</li>
+			{% endfor %}
+			{% endif %}
+		</ul>
+	  <!-- sidebar menu end-->
+	</div>
+</aside> 
+ 

@@ -1,0 +1,125 @@
+{% extends 'templates/app.twig' %}
+{% block headertambahan %}
+	
+{% endblock %}
+
+{% block nav %}
+	{% include 'templates/partials/navigation.twig' %}
+{% endblock %}
+
+{% block sidebar %} 
+	{% include 'templates/partials/sidebar.twig' %} 
+{% endblock %}
+
+{% block content %}
+<section id="main-content">
+<div class="row" style="padding: 30px;">
+	<div class="col-md-12">
+		<div class="panel panel-success">
+			<div class="panel-heading">
+				<div class="nav">
+				<h3 class="panel-title pull-left">Data Lokasi</h3>
+				<div class="nav pull-right">
+					<span class="clickable filter" data-toggle="tooltip" title="" data-container="body" data-original-title="Show Filter">
+						<i class="glyphicon glyphicon-search"></i>
+					</span>
+				</div> 
+				</div>
+			</div> 
+			<div class="row" style="padding: 10px "> 
+				<div class="col-xs-12 col-sm-12 col-md-12  ">
+				<label><h4>Short By Category</h4></label>
+				<div class="faaa col-xs-13 col-sm-16 col-md-2  ">
+					<select class="form form-control">
+					<option value="">all</option>
+					{% for i in 1..data.kategori|length %}
+						<option value="{{ data.kategori[i-1]['id_kategori'] }}">{{i}}. {{ data.kategori[i-1]['nama_kategori'] }}</option> 
+					{% endfor %}
+					</select>
+				  </div>
+				  <div class="pull-right">
+{% if auth.userlevel < 2 %}
+					<a href="{{path_for('form.inputcube')}}" class="btn btn-xs btn-primary">Tambah Lokasi &nbsp;<i class="glyphicon glyphicon-plus"></i></a>
+					<button type="button" class="btn btn-primary btn-xs" data-toggle="modal" data-target="#myModal">
+					  <i class="glyphicon glyphicon-plus"></i> Tambah Kategori
+					</button>  
+{% endif %}
+					</div>
+				</div> 
+			</div>
+			<div class="panel-body" style="display:none;">
+				<input type="text" class="form-control" id="task-table-filter" data-action="filter" data-filters="#task-table" placeholder="Filter Tasks"> 
+			</div>
+			<table class="table table-hover" id="task-table" data-tabel="task-table">
+				<thead>
+					<tr data-status="head" class="bg-info" >
+						<td>#</td>
+						<td>Nama Tempat</td>
+						<td>Deskripsi</td>
+						<td>Info Spot</td>
+						<td width="150px" align="center">Action</td>
+					</tr>
+				</thead>
+				<tbody>
+				{% if data.table|length<=0 %}
+					<td colspan="5"> Tidak ada data yang bisa ditampilkan untuk anda </td>
+				{% else %}
+					{% for o in 1..data.table|length %}
+						<tr data-status="{{o}}. {{ data.kategori[o-1]['nama_kategori'] }}">
+							<td> {{o}} </td>
+							<td> {{data.table[o-1]['nama_tempat']}} </td>
+							<td> {{data.table[o-1]['deskripsi']}} </td>
+							<td> 
+							{% if data.keterangan[o-1]['idcube'] == data.table[ o-1 ]['id_cube'] %}
+							 <a href="{{ path_for('admin.TableKeterangan') }}?idcube={{data.datanav[ o-1 ]['id_cube']}}">Lihat</a>
+							{%else%}
+							Kosong
+							{% endif %}
+							</td> 
+							 
+							<td align="center" valign="top">
+								{% if auth.userlevel < 2 %}
+								<a href="{{ path_for('form.inputketerangan') }}?idcube={{data.table[ o-1 ]['id_cube']}}" class="btn btn-xs btn-primary"><i class="glyphicon glyphicon-plus"></i></a>
+								<a href="{{ path_for('admin.deleteCubeMap') }}?idcube={{data.table[ o-1 ]['id_cube']}}" class="btn btn-xs btn-primary"><i class="glyphicon glyphicon-trash"></i></a>
+								<a href="{{path_for('form.updatecube')}}?idcube={{data.table[ o-1 ]['id_cube']}}" class="btn btn-xs btn-primary"><i class="glyphicon glyphicon-pencil"></i></a>
+								{% endif %}
+								<a href="{{base_url()}}?idcube={{data.datanav[ o-1 ]['id_cube']}}" class="btn btn-xs btn-primary"><i class="glyphicon glyphicon-eye-open"></i></a>
+							</td> 
+						</tr>
+					{% endfor %}
+				{% endif %}		 
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+</section>
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+    <form action="{{ path_for('user.dashboard') }}" method="POST" enctype="multipart/form-data" name="form1" autocomplete="off">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title" id="myModalLabel">Tambahkan Kategori</h4>
+		</div>
+		<div class="modal-body">
+			<div class="form-group">
+				<label for="namaKategori">Nama Kategori</label>
+    			<input type="text" class="form-control" id="namaKategori" name="namaKategori" placeholder="Nama Kategori">
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button type="reset" class="btn btn-default" data-dismiss="modal">batal</button>
+			<button type="submit" class="btn btn-primary">Simpan</button>
+		</div>
+		{{ csrf.field | raw }}
+    </form>
+    </div>
+  </div>
+</div>
+
+
+<script type="text/javascript" src="{{base_url()}}/assets/js/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="{{base_url()}}/assets/js/customtablefilter.js"></script>
+{% endblock %}
