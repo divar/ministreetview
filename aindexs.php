@@ -1,3 +1,3 @@
 <?php
 
-// header ("Location: /ministreetview2/public");
+//a header ("Location: /ministreetview2/public");
