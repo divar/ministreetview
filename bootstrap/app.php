@@ -19,10 +19,10 @@ $databaselocal = ([
 ]);	
 $databaseserver = ([
 	'driver' => 'mysql',
-	'host' => 'mysql.idhostinger.com',
-	'database' =>'u615111913_msv',
-	'username' => 'u615111913_msv',
-	'password' => '6nnHIMp90',
+	'host' => 'localhost',
+	'database' =>'wallniki_M7',
+	'username' => 'wallniki_divar',
+	'password' => '6nnHIMp9 ',
 	'charset' => 'utf8',
 	'collation' => 'utf8_unicode_ci',
 	'prefix' =>''
@@ -33,7 +33,7 @@ $app = new App([
 	 	'determineRouteBeforeAppMiddleware' => true, 
    	 	'addContentLengthHeader' => false,
 		'displayErrorDetails'=> true,
-		'db'=>$databaselocal,
+		'db'=>$databaseserver,
 	]
 ]);
 

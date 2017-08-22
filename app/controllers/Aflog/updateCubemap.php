@@ -91,8 +91,8 @@ Class UpdateCubeMap extends Controller
 				));
 		 		 
 				$data = array(
-				    'name'       => $this->file[$i]->getNameWithExtension(),
-				    'extension'  => $this->file[$i]->getExtension(),
+				    'name'       => $this->file[$i]->getName(),
+				    // 'extension'  => $this->file[$i]->getExtension(),
 				    'mime'       => $this->file[$i]->getMimetype(),
 				    'size'       => $this->file[$i]->getSize(),
 				    'md5'        => $this->file[$i]->getMd5(),
@@ -111,7 +111,7 @@ Class UpdateCubeMap extends Controller
 						if (in_array($o, $yangterupdate)) {
 							echo "copied"; 
 							try { 
-							   $this->file[$o]->upload();					    
+							   $this->file[$o]->upload($this->file[$o]->getName());					    
 							} catch (\Exception $e) {
 								 $this->errors = $this->file[$o]->getErrors();  
 								return false;
@@ -122,7 +122,7 @@ Class UpdateCubeMap extends Controller
 				}
 			 
 		}
-		echo 'asadsda';
+		// echo 'asadsda';
 	 
 	}
 
